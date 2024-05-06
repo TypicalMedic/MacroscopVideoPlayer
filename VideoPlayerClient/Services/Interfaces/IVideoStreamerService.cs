@@ -9,7 +9,7 @@ namespace VideoPlayerClient.Services.Interfaces
 {
     public interface IVideoStreamerService
     {
-        public Task<char[]> GetVideoFromStream(string cameraId);
+        public Task<char[]> GetVideoFrameFromStream(string cameraId);
 
         public Task<Dictionary<string, string>> GetCameras();
     }

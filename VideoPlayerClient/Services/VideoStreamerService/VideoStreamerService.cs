@@ -18,7 +18,7 @@ namespace VideoPlayerClient.Services.VideoStreamerService
             return cameras;
         }
 
-        public async Task<char[]> GetVideoFromStream(string cameraId)
+        public async Task<char[]> GetVideoFrameFromStream(string cameraId)
         {
             var stream = await _videoStreamer.GetVideoStreamByIdAsync(cameraId);
             var img = await _videoStreamer.GetVideoFrameAsync(stream);
