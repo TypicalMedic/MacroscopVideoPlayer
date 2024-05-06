@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using VideoPlayerClient.Services.Interfaces;
@@ -18,13 +19,16 @@ namespace VideoPlayerClient.Services.VideoStreamerService
             return cameras;
         }
 
-        public async Task<byte[]> GetVideoFrameFromStreamRawAsync(string cameraId)
+        public async IAsyncEnumerable<byte[]> GetVideoFrameFromStreamRawAsync(string cameraId, [EnumeratorCancellation] CancellationToken token = default)
         {
-            var stream = await _videoStreamer.GetVideoStreamByIdAsync(cameraId);
-            var img = await _videoStreamer.GetVideoFrameAsync(stream);
-
-            return img;
+            BufferedStream? stream = null;
+            while (!token.IsCancellationRequested)
+            {
+                stream = await _videoStreamer.GetVideoStreamByIdAsync(cameraId);
+                var img = await _videoStreamer.GetVideoFrameAsync(stream);
+                yield return img;
+            }
+            stream?.Close();
         }
-
     }
 }

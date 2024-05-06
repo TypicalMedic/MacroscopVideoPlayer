@@ -18,6 +18,8 @@ namespace VideoPlayerClient.ViewModels
     {
         private readonly IVideoStreamerService _videoStreamerService;
         private readonly IMjpegReader _mjpegReader;
+        private CancellationTokenSource CTS = new CancellationTokenSource();
+        private readonly object _lockCts = new object();
 
         #region CamerasIds
         private Dictionary<string, string> _CamerasIds = [];
@@ -61,14 +63,34 @@ namespace VideoPlayerClient.ViewModels
                 return;
             }
 
+            ResetCancellationToken();
 
-            var imgRaw = await _videoStreamerService.GetVideoFrameFromStreamRawAsync(SelectedCam);
+            var imgsRaw = _videoStreamerService.GetVideoFrameFromStreamRawAsync(SelectedCam);
 
-            var bitmapImg = await _mjpegReader.GetImageFromRawInputAsync(imgRaw);
-           
-            Img = bitmapImg;
+            await ProcessImgsAsync(imgsRaw);
         }
-        private bool CanGetSelectedVideoCommandExecute(object? p) => true; 
+
+        private void ResetCancellationToken()
+        {
+            // костыль?
+            lock (_lockCts)
+            {
+                CTS.Cancel();
+                CTS.Dispose();
+                CTS = new CancellationTokenSource();
+            }
+        }
+        private async Task ProcessImgsAsync(IAsyncEnumerable<byte[]> imgs)
+        {
+            await foreach (var imgRaw in imgs.WithCancellation(CTS.Token))
+            {
+                var bitmapImg = await _mjpegReader.GetImageFromRawInputAsync(imgRaw);
+
+                Img = bitmapImg;
+            }
+        }
+
+        private bool CanGetSelectedVideoCommandExecute(object? p) => true;
 
         #endregion
 
