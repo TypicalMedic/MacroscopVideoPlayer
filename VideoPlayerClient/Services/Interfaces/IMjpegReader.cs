@@ -9,6 +9,6 @@ namespace VideoPlayerClient.Services.Interfaces
 {
     public interface IMjpegReader
     {
-        public Task<BitmapImage> GetImageFromRawInputAsync(char[] rawInput);
+        public Task<BitmapImage> GetImageFromRawInputAsync(byte[] rawInput);
     }
 }

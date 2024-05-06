@@ -12,17 +12,11 @@ namespace VideoPlayerClient.Services.MjpegReader
 {
     internal class MjpegReader : IMjpegReader
     {
-        public Task<BitmapImage> GetImageFromRawInputAsync(char[] rawInput)
+        public Task<BitmapImage> GetImageFromRawInputAsync(byte[] rawInput)
         {
-            var rawByteInput = rawInput.Select(c => (byte)c).ToArray();
-            //rawByteInput[0] = (byte)0xFF;
-            //rawByteInput[1] = (byte)0xD8;
-            //rawByteInput[2] = (byte)0xFF;
-            //rawByteInput[3] = (byte)0xE0;
-
             var img = new BitmapImage();
 
-            using (var mem = new MemoryStream(rawByteInput))
+            using (var mem = new MemoryStream(rawInput))
             {
                 img.BeginInit();
                 img.CacheOption = BitmapCacheOption.OnLoad;
@@ -32,7 +26,6 @@ namespace VideoPlayerClient.Services.MjpegReader
             }
 
             return Task.Run(() => { return img; });
-            throw new NotImplementedException();
         }
     }
 }
