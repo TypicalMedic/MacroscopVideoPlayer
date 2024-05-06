@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using VideoPlayerClient.Commands;
 using VideoPlayerClient.Services.Interfaces;
 using VideoPlayerClient.VideoStreamer.Interfaces;
@@ -38,9 +40,9 @@ namespace VideoPlayerClient.ViewModels
         #endregion
 
         #region Img
-        private Image _Img = new Image();
+        private ImageSource? _Img;
 
-        public Image Img
+        public ImageSource? Img
         {
             get => _Img;
             set => Set(ref _Img, value);
@@ -55,15 +57,18 @@ namespace VideoPlayerClient.ViewModels
         {
             if (SelectedCam.Equals(string.Empty))
             {
-                throw new Exception("no cam selected!");
+                MessageBox.Show("no cam selected!");
+                return;
             }
-            var imgRaw = await _videoStreamerService.GetVideoFrameFromStream(SelectedCam);
+
+
+            var imgRaw = await _videoStreamerService.GetVideoFrameFromStreamRawAsync(SelectedCam);
 
             var bitmapImg = await _mjpegReader.GetImageFromRawInputAsync(imgRaw);
            
-            Img.Source = bitmapImg;
+            Img = bitmapImg;
         }
-        private bool CanGetSelectedVideoCommandExecute(object? p) => true; //todo?
+        private bool CanGetSelectedVideoCommandExecute(object? p) => true; 
 
         #endregion
 

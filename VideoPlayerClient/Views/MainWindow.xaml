@@ -9,7 +9,7 @@
 
     <Grid>
         <DockPanel LastChildFill="False">
-            <Image Source="/Views/1029845290_0_52_2000_1183_600x0_80_0_0_fdf366ed7d4682f429f40c1a4398c3c7.jpg" Width="562" />
+            <Image Source="{Binding Img}" Width="562" />
             <DockPanel >
                 <ComboBox Width="100" DockPanel.Dock="Top" Height="20" 
                           ItemsSource="{Binding CamerasIds}"
