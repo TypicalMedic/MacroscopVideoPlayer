@@ -1,0 +1,21 @@
+﻿<Window x:Class="VideoPlayerClient.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800"
+        DataContext="{Binding MainWindowViewModel, Source={StaticResource Locator}}">
+
+    <Grid>
+        <DockPanel LastChildFill="False">
+            <Image Source="/Views/licensed-image.jpg" />
+            <DockPanel >
+                <ComboBox Width="100" DockPanel.Dock="Top" Height="20" ItemsSource="{Binding CamerasIds}"/>
+                <Button Content="Выбрать" DockPanel.Dock="Bottom" Height="20" Command="{Binding GetVidCommand}"/>
+            </DockPanel>
+
+        </DockPanel>
+
+    </Grid>
+</Window>
