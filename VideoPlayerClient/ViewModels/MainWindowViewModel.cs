@@ -17,23 +17,32 @@ namespace VideoPlayerClient.ViewModels
         private readonly IVideoStreamerService _videoStreamerService;
 
         #region CamerasIds
-        private List<string> _CamerasIds { get; set; } = [];
+        private Dictionary<string, string> _CamerasIds = [];
 
-        public List<string> CamerasIds
+        public Dictionary<string, string> CamerasIds
         {
             get => _CamerasIds;
-            set => _CamerasIds = value;
+            set => Set(ref _CamerasIds, value);
         }
         #endregion
 
+        #region SelectedCam
+        private string _SelectedCam = string.Empty;
+
+        public string SelectedCam
+        {
+            get => _SelectedCam;
+            set => Set(ref _SelectedCam, value);
+        }
+        #endregion
 
         #region Img
-        private Image _Img { get; set; } = new Image();
+        private Image _Img = new Image();
 
         public Image Img
         {
             get => _Img;
-            set => _Img = value;
+            set => Set(ref _Img, value);
         }
         #endregion
 
@@ -43,7 +52,11 @@ namespace VideoPlayerClient.ViewModels
 
         private async void OnGetSelectedVideoCommandExecuted(object? p)
         {
-            Console.WriteLine("test");
+            if (SelectedCam.Equals(string.Empty))
+            {
+                throw new Exception("no cam selected!");
+            }
+            var img = await _videoStreamerService.GetVideoFromStream(SelectedCam);
             // async 
 
             // Get video stream from API
@@ -74,12 +87,12 @@ namespace VideoPlayerClient.ViewModels
             SetCamerasIdsSelect(ids);
         }
 
-        private void SetCamerasIdsSelect(List<string> ids)
+        private void SetCamerasIdsSelect(Dictionary<string, string> ids)
         {
-            _CamerasIds = ids;
+            CamerasIds = ids;
         }
 
-        private async Task<List<string>> GetCamerasIdsAsync()
+        private async Task<Dictionary<string, string>> GetCamerasIdsAsync()
         {
             var ids = await _videoStreamerService.GetCameras();
             return ids;

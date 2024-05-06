@@ -11,7 +11,11 @@
         <DockPanel LastChildFill="False">
             <Image Source="/Views/licensed-image.jpg" />
             <DockPanel >
-                <ComboBox Width="100" DockPanel.Dock="Top" Height="20" ItemsSource="{Binding CamerasIds}"/>
+                <ComboBox Width="100" DockPanel.Dock="Top" Height="20" 
+                          ItemsSource="{Binding CamerasIds}"
+                          SelectedValuePath="Key" 
+                          DisplayMemberPath="Value"
+                          SelectedValue="{Binding SelectedCam}"/>
                 <Button Content="Выбрать" DockPanel.Dock="Bottom" Height="20" Command="{Binding GetVidCommand}"/>
             </DockPanel>
 
