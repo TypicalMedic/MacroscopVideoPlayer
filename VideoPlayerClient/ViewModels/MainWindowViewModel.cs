@@ -15,6 +15,7 @@ namespace VideoPlayerClient.ViewModels
     public class MainWindowViewModel : ViewModel
     {
         private readonly IVideoStreamerService _videoStreamerService;
+        private readonly IMjpegReader _mjpegReader;
 
         #region CamerasIds
         private Dictionary<string, string> _CamerasIds = [];
@@ -56,26 +57,22 @@ namespace VideoPlayerClient.ViewModels
             {
                 throw new Exception("no cam selected!");
             }
-            var img = await _videoStreamerService.GetVideoFromStream(SelectedCam);
-            // async 
+            var imgRaw = await _videoStreamerService.GetVideoFrameFromStream(SelectedCam);
 
-            // Get video stream from API
-
-            // Get video frame from steam
-
-            // Update img with frame
-
-            // how to end stream????????????????????
+            var bitmapImg = await _mjpegReader.GetImageFromRawInputAsync(imgRaw);
+           
+            Img.Source = bitmapImg;
         }
         private bool CanGetSelectedVideoCommandExecute(object? p) => true; //todo?
 
         #endregion
 
-        public MainWindowViewModel(IVideoStreamerService videoStreamerService)
+        public MainWindowViewModel(IVideoStreamerService videoStreamerService, IMjpegReader mjpegReader)
         {
             GetVidCommand = new LambdaCommand(OnGetSelectedVideoCommandExecuted, CanGetSelectedVideoCommandExecute);
 
             _videoStreamerService = videoStreamerService;
+            _mjpegReader = mjpegReader;
 
             Task.Run(() => ConfigureCamerasIdsAsync());
         }

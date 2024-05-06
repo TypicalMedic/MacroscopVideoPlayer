@@ -14,7 +14,7 @@ namespace VideoPlayerClient.VideoStreamer
 {
     public class VideoStreamerHttp(HttpClient httpClient) : IVideoStreamer
     {
-        private readonly char[] headerEndBytes = { '\r', '\n', '\r', '\n' };
+        private readonly char[] headerEndBytes = ['\r', '\n', '\r', '\n'];
         private const string getVideoStreamEndpointUrl = "/mobile";
         private const string getCamerasEndpointUrl = "/configex";
         private readonly HttpClient _httpClient = httpClient;
@@ -96,6 +96,10 @@ namespace VideoPlayerClient.VideoStreamer
                 endHeaderBuffer.Enqueue(currentChar[0]);
                 header.Add(currentChar[0]);
             }
+
+            //char[] s = new char[190];
+            //await stream.ReadAsync(s, 0, 190).ConfigureAwait(false);
+            //var aaaa = s.Select(c => (byte)c).ToArray();  
 
             string headerStr = new(header.ToArray());
             return headerStr;

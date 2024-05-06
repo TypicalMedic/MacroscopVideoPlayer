@@ -6,6 +6,7 @@ using System.Configuration;
 using System.Net.Http;
 using System.Windows;
 using VideoPlayerClient.Services.Interfaces;
+using VideoPlayerClient.Services.MjpegReader;
 using VideoPlayerClient.Services.VideoStreamerService;
 using VideoPlayerClient.VideoStreamer;
 using VideoPlayerClient.VideoStreamer.Interfaces;
@@ -47,7 +48,7 @@ namespace VideoPlayerClient
             SetupHttpclient(services, serverUrl);
             services.AddSingleton<MainWindowViewModel>();
             services.AddScoped<IVideoStreamerService, VideoStreamerService>();
-            //services.AddScoped<IVideoStreamer, VideoStreamerHttp>();
+            services.AddScoped<IMjpegReader, MjpegReader>();
         }
         public static void SetupHttpclient(IServiceCollection services, string serverUrl)
         {
