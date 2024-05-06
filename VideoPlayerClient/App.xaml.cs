@@ -44,18 +44,18 @@ namespace VideoPlayerClient
                 MessageBox.Show("Ошибка запуска приложения: параметр server_url не установлен.", "Ошибка");
                 Environment.Exit(1);
             }
-            //SetupHttpclient(services, serverUrl);
+            SetupHttpclient(services, serverUrl);
             services.AddSingleton<MainWindowViewModel>();
             services.AddScoped<IVideoStreamerService, VideoStreamerService>();
-            services.AddScoped<IVideoStreamer, VideoStreamerHttp>();
+            //services.AddScoped<IVideoStreamer, VideoStreamerHttp>();
         }
-        //public static void SetupHttpclient(IServiceCollection services, string serverUrl)
-        //{
-        //    services.AddHttpClient<IPalindromeValidator, PalindromeValidatorFromServer>()
-        //        .ConfigureHttpClient(client => client.BaseAddress = new Uri(serverUrl))
-        //        .SetHandlerLifetime(HttpHandlerLifetime);
-        //}
-        
+        public static void SetupHttpclient(IServiceCollection services, string serverUrl)
+        {
+            services.AddHttpClient<IVideoStreamer, VideoStreamerHttp>()
+                .ConfigureHttpClient(client => client.BaseAddress = new Uri(serverUrl))
+                .SetHandlerLifetime(HttpHandlerLifetime);
+        }
+
     }
 
 
