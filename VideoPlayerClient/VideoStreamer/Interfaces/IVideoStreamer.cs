@@ -11,6 +11,7 @@ namespace VideoPlayerClient.VideoStreamer.Interfaces
     {
         public Task<StreamReader> GetVideoStreamByIdAsync(string cameraId);
 
-        public Task<byte[]> GetVideoFrame(StreamReader stream);
+        public Task<char[]> GetVideoFrameAsync(StreamReader stream);
+        public Task<Dictionary<string, string>> GetCamerasAsync();
     }
 }
