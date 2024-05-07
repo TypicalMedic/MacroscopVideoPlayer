@@ -21,14 +21,13 @@ namespace VideoPlayerClient.Services.VideoStreamerService
 
         public async IAsyncEnumerable<byte[]> GetVideoFrameFromStreamRawAsync(string cameraId, [EnumeratorCancellation] CancellationToken token = default)
         {
-            BufferedStream? stream = null;
+            BufferedStream stream = await _videoStreamer.GetVideoStreamByIdAsync(cameraId);
             while (!token.IsCancellationRequested)
             {
-                stream = await _videoStreamer.GetVideoStreamByIdAsync(cameraId);
                 var img = await _videoStreamer.GetVideoFrameAsync(stream);
                 yield return img;
             }
-            stream?.Close();
+            stream.Close();
         }
     }
 }
