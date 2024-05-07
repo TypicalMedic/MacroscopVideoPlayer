@@ -1,0 +1,10 @@
+﻿<Application x:Class="VideoPlayerClient.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:VideoPlayerClient"
+             xmlns:vm="clr-namespace:VideoPlayerClient.ViewModels"
+            StartupUri="Views/MainWindow.xaml">
+    <Application.Resources>
+        <vm:ViewModelLocator x:Key="Locator"/>
+    </Application.Resources>
+</Application>
