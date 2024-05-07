@@ -8,7 +8,6 @@ using System.Xml;
 using System.Threading.Tasks;
 using System.Windows.Media.Media3D;
 using VideoPlayerClient.VideoStreamer.Interfaces;
-using System.Threading.Channels;
 
 namespace VideoPlayerClient.VideoStreamer
 {
@@ -75,7 +74,7 @@ namespace VideoPlayerClient.VideoStreamer
             string headerStr = await ReadHeaderFromStreamAsync(stream);
             int contentLength = GetContentLengthFromHeader(headerStr);
 
-            byte[] imgData = await ReadImageRawFromStream(stream, contentLength);
+            byte[] imgData = await ReadImageRawFromStreamAsync(stream, contentLength);
             return imgData;
         }
 
@@ -97,7 +96,7 @@ namespace VideoPlayerClient.VideoStreamer
                 header.Add(currentByte[0]);
             }
 
-            string headerStr = new(header.Select(b=>(char)b).ToArray());
+            string headerStr = new(header.Select(b => (char)b).ToArray());
             return headerStr;
         }
 
@@ -116,7 +115,7 @@ namespace VideoPlayerClient.VideoStreamer
             return contentLength;
         }
 
-        private async Task<byte[]> ReadImageRawFromStream(BufferedStream stream, int contentLength)
+        private async Task<byte[]> ReadImageRawFromStreamAsync(BufferedStream stream, int contentLength)
         {
             byte[] imgData = new byte[contentLength];
             // занимает много времени и памяти, можно ли ускорить?
