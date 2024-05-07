@@ -25,7 +25,7 @@ namespace VideoPlayerClient.Services.MjpegReader
                 img.Freeze();
             }
 
-            return Task.Run(() => { return img; });
+            return Task.FromResult(img);
         }
     }
 }
