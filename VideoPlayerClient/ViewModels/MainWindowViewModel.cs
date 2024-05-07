@@ -112,7 +112,6 @@ namespace VideoPlayerClient.ViewModels
             await foreach (var imgRaw in imgs.WithCancellation(CTS.Token))
             {
                 var bitmapImg = await _mjpegReader.GetImageFromRawInputAsync(imgRaw);
-                Debug.WriteLine(index + " " + bitmapImg);
                 yield return bitmapImg;
             }
         }
