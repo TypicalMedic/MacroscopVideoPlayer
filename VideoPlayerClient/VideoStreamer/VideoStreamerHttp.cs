@@ -14,18 +14,18 @@ namespace VideoPlayerClient.VideoStreamer
 {
     public class VideoStreamerHttp(HttpClient httpClient) : IVideoStreamer
     {
-        private readonly char[] headerEndBytes = { '\r', '\n', '\r', '\n' };
+        private readonly byte[] headerEndBytes = [(byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n'];
         private const string getVideoStreamEndpointUrl = "/mobile";
         private const string getCamerasEndpointUrl = "/configex";
         private readonly HttpClient _httpClient = httpClient;
 
-        public async Task<StreamReader> GetVideoStreamByIdAsync(string cameraId)
+        public async Task<BufferedStream> GetVideoStreamByIdAsync(string cameraId)
         {
             string queryParams = $"?login=root&channelid={cameraId}";
 
             var response = await _httpClient.GetStreamAsync($"{getVideoStreamEndpointUrl}{queryParams}").ConfigureAwait(false);
 
-            StreamReader streamReader = new(response);
+            BufferedStream streamReader = new(response);
             return streamReader;
         }
 
@@ -70,34 +70,34 @@ namespace VideoPlayerClient.VideoStreamer
             return result;
         }
 
-        public async Task<char[]> GetVideoFrameAsync(StreamReader stream)
+        public async Task<byte[]> GetVideoFrameAsync(BufferedStream stream)
         {
             string headerStr = await ReadHeaderFromStreamAsync(stream);
             int contentLength = GetContentLengthFromHeader(headerStr);
 
-            char[] imgData = await ReadImageRawFromStream(stream, contentLength);
+            byte[] imgData = await ReadImageRawFromStream(stream, contentLength);
             return imgData;
         }
 
-        private async Task<string> ReadHeaderFromStreamAsync(StreamReader stream)
+        private async Task<string> ReadHeaderFromStreamAsync(BufferedStream stream)
         {
             // ищем конец хедера и возвращаем его
-            Queue<char> endHeaderBuffer = new(headerEndBytes.Length);
-            char[] currentChar = new char[1];
-            List<char> header = [];
+            Queue<byte> endHeaderBuffer = new(headerEndBytes.Length);
+            byte[] currentByte = new byte[1];
+            List<byte> header = [];
 
             while (!endHeaderBuffer.ToArray().SequenceEqual(headerEndBytes))
             {
-                await stream.ReadAsync(currentChar, 0, 1).ConfigureAwait(false);
+                await stream.ReadAsync(currentByte.AsMemory(0, 1)).ConfigureAwait(false);
                 if (endHeaderBuffer.Count >= headerEndBytes.Length)
                 {
                     endHeaderBuffer.Dequeue();
                 }
-                endHeaderBuffer.Enqueue(currentChar[0]);
-                header.Add(currentChar[0]);
+                endHeaderBuffer.Enqueue(currentByte[0]);
+                header.Add(currentByte[0]);
             }
 
-            string headerStr = new(header.ToArray());
+            string headerStr = new(header.Select(b=>(char)b).ToArray());
             return headerStr;
         }
 
@@ -116,10 +116,11 @@ namespace VideoPlayerClient.VideoStreamer
             return contentLength;
         }
 
-        private async Task<char[]> ReadImageRawFromStream(StreamReader stream, int contentLength)
+        private async Task<byte[]> ReadImageRawFromStream(BufferedStream stream, int contentLength)
         {
-            char[] imgData = new char[contentLength];
-            await stream.ReadAsync(imgData, 0, contentLength).ConfigureAwait(false);
+            byte[] imgData = new byte[contentLength];
+            // занимает много времени и памяти, можно ли ускорить?
+            await stream.ReadExactlyAsync(imgData.AsMemory(0, contentLength)).ConfigureAwait(false);
             return imgData;
         }
     }

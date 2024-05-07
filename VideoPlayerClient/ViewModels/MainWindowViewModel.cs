@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using VideoPlayerClient.Commands;
 using VideoPlayerClient.Services.Interfaces;
 using VideoPlayerClient.VideoStreamer.Interfaces;
@@ -15,6 +17,9 @@ namespace VideoPlayerClient.ViewModels
     public class MainWindowViewModel : ViewModel
     {
         private readonly IVideoStreamerService _videoStreamerService;
+        private readonly IMjpegReader _mjpegReader;
+        private CancellationTokenSource CTS = new CancellationTokenSource();
+        private readonly object _lockCts = new object();
 
         #region CamerasIds
         private Dictionary<string, string> _CamerasIds = [];
@@ -37,9 +42,9 @@ namespace VideoPlayerClient.ViewModels
         #endregion
 
         #region Img
-        private Image _Img = new Image();
+        private ImageSource? _Img;
 
-        public Image Img
+        public ImageSource? Img
         {
             get => _Img;
             set => Set(ref _Img, value);
@@ -54,28 +59,47 @@ namespace VideoPlayerClient.ViewModels
         {
             if (SelectedCam.Equals(string.Empty))
             {
-                throw new Exception("no cam selected!");
+                MessageBox.Show("no cam selected!");
+                return;
             }
-            var img = await _videoStreamerService.GetVideoFromStream(SelectedCam);
-            // async 
 
-            // Get video stream from API
+            ResetCancellationToken();
 
-            // Get video frame from steam
+            var imgsRaw = _videoStreamerService.GetVideoFrameFromStreamRawAsync(SelectedCam);
 
-            // Update img with frame
-
-            // how to end stream????????????????????
+            await ProcessImgsAsync(imgsRaw);
         }
-        private bool CanGetSelectedVideoCommandExecute(object? p) => true; //todo?
+
+        private void ResetCancellationToken()
+        {
+            // костыль?
+            lock (_lockCts)
+            {
+                CTS.Cancel();
+                CTS.Dispose();
+                CTS = new CancellationTokenSource();
+            }
+        }
+        private async Task ProcessImgsAsync(IAsyncEnumerable<byte[]> imgs)
+        {
+            await foreach (var imgRaw in imgs.WithCancellation(CTS.Token))
+            {
+                var bitmapImg = await _mjpegReader.GetImageFromRawInputAsync(imgRaw);
+
+                Img = bitmapImg;
+            }
+        }
+
+        private bool CanGetSelectedVideoCommandExecute(object? p) => true;
 
         #endregion
 
-        public MainWindowViewModel(IVideoStreamerService videoStreamerService)
+        public MainWindowViewModel(IVideoStreamerService videoStreamerService, IMjpegReader mjpegReader)
         {
             GetVidCommand = new LambdaCommand(OnGetSelectedVideoCommandExecuted, CanGetSelectedVideoCommandExecute);
 
             _videoStreamerService = videoStreamerService;
+            _mjpegReader = mjpegReader;
 
             Task.Run(() => ConfigureCamerasIdsAsync());
         }
