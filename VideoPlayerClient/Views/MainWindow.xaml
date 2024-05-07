@@ -9,16 +9,47 @@
 
     <Grid>
         <DockPanel LastChildFill="False">
-            <Image Source="{Binding Img}" Width="562" />
-            <DockPanel >
-                <ComboBox Width="100" DockPanel.Dock="Top" Height="20" 
+            <Grid DockPanel.Dock="Right">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
+                <ComboBox Grid.Row="0" Width="100" DockPanel.Dock="Top" Height="20" VerticalAlignment="Top"
                           ItemsSource="{Binding CamerasIds}"
                           SelectedValuePath="Key" 
                           DisplayMemberPath="Value"
-                          SelectedValue="{Binding SelectedCam}"/>
-                <Button Content="Выбрать" DockPanel.Dock="Bottom" Height="20" Command="{Binding GetVidCommand}"/>
-            </DockPanel>
+                          SelectedValue="{Binding SelectedCams[0]}"/>
+                <ComboBox Grid.Row="1" Width="100" DockPanel.Dock="Top" Height="20" VerticalAlignment="Top"
+                          ItemsSource="{Binding CamerasIds}"
+                          SelectedValuePath="Key" 
+                          DisplayMemberPath="Value"
+                          SelectedValue="{Binding SelectedCams[1]}"/>
+                <ComboBox Grid.Row="2" Width="100" DockPanel.Dock="Top" Height="20" VerticalAlignment="Top"
+                          ItemsSource="{Binding CamerasIds}"
+                          SelectedValuePath="Key" 
+                          DisplayMemberPath="Value"
+                          SelectedValue="{Binding SelectedCams[2]}"/>
+                <Button Grid.Row="3" Content="Выбрать" Height="20" Command="{Binding GetVidCommand}"/>                
 
+            </Grid>
+            <Grid DockPanel.Dock="Left">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                
+                <Image Grid.Column="0" Grid.Row="0" Margin="10,0,0,0" Source="{Binding Imgs[0]}" DockPanel.Dock="Left" />
+                <Image Grid.Column="1" Grid.Row="0" Margin="10,0,0,0" Source="{Binding Imgs[1]}" DockPanel.Dock="Left"/>
+                <Image Grid.Column="0" Grid.Row="1" Margin="10,10,0,0" Source="{Binding Imgs[2]}" DockPanel.Dock="Left"/>
+
+
+            </Grid>
         </DockPanel>
 
     </Grid>

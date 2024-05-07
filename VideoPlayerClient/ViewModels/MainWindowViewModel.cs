@@ -1,12 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection.Emit;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using VideoPlayerClient.Commands;
 using VideoPlayerClient.Services.Interfaces;
 using VideoPlayerClient.VideoStreamer.Interfaces;
@@ -20,6 +26,7 @@ namespace VideoPlayerClient.ViewModels
         private readonly IMjpegReader _mjpegReader;
         private CancellationTokenSource CTS = new CancellationTokenSource();
         private readonly object _lockCts = new object();
+        private const int camCount = 3;
 
         #region CamerasIds
         private Dictionary<string, string> _CamerasIds = [];
@@ -31,23 +38,24 @@ namespace VideoPlayerClient.ViewModels
         }
         #endregion
 
-        #region SelectedCam
-        private string _SelectedCam = string.Empty;
+        #region SelectedCams
+        private string[] _SelectedCams = new string[camCount];
 
-        public string SelectedCam
+        public string[] SelectedCams
         {
-            get => _SelectedCam;
-            set => Set(ref _SelectedCam, value);
+            get => _SelectedCams;
+            set => Set(ref _SelectedCams, value);
         }
+
         #endregion
 
-        #region Img
-        private ImageSource? _Img;
+        #region Imgs
+        private ObservableCollection<ImageSource?> _Imgs = [new BitmapImage(), new BitmapImage(), new BitmapImage()];
 
-        public ImageSource? Img
+        public ObservableCollection<ImageSource?> Imgs
         {
-            get => _Img;
-            set => Set(ref _Img, value);
+            get => _Imgs;
+            set => Set(ref _Imgs, value);
         }
         #endregion
 
@@ -55,19 +63,37 @@ namespace VideoPlayerClient.ViewModels
 
         public ICommand GetVidCommand { get; set; }
 
-        private async void OnGetSelectedVideoCommandExecuted(object? p)
+        private void OnGetSelectedVideoCommandExecuted(object? p)
         {
-            if (SelectedCam.Equals(string.Empty))
+            if (_SelectedCams.Any(s => s.Equals(string.Empty)))
             {
-                MessageBox.Show("no cam selected!");
+                MessageBox.Show("select all cams!");
                 return;
             }
 
             ResetCancellationToken();
 
-            var imgsRaw = _videoStreamerService.GetVideoFrameFromStreamRawAsync(SelectedCam);
+            LoadCameras();
+        }
 
-            await ProcessImgsAsync(imgsRaw);
+        private void LoadCameras()
+        {
+            for (int i = 0; i < camCount; i++)
+            {
+                int index = i;
+                IProgress<ImageSource> progress = new Progress<ImageSource>(src => Imgs[index] = src);
+
+                Task.Run(async () =>
+                {
+                    var imgsRaw = _videoStreamerService.GetVideoFrameFromStreamRawAsync(SelectedCams[index]);
+
+                    var imgs = ProcessImgsAsync(imgsRaw, index);
+                    await foreach (var img in imgs)
+                    {
+                        progress.Report(img);
+                    }
+                });
+            }
         }
 
         private void ResetCancellationToken()
@@ -80,13 +106,14 @@ namespace VideoPlayerClient.ViewModels
                 CTS = new CancellationTokenSource();
             }
         }
-        private async Task ProcessImgsAsync(IAsyncEnumerable<byte[]> imgs)
+
+        private async IAsyncEnumerable<BitmapImage> ProcessImgsAsync(IAsyncEnumerable<byte[]> imgs, int index)
         {
             await foreach (var imgRaw in imgs.WithCancellation(CTS.Token))
             {
                 var bitmapImg = await _mjpegReader.GetImageFromRawInputAsync(imgRaw);
-
-                Img = bitmapImg;
+                Debug.WriteLine(index + " " + bitmapImg);
+                yield return bitmapImg;
             }
         }
 
